@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <application
+        android:allowBackup="true"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:fullBackupContent="@xml/backup_rules"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.MemoryGame"
+        tools:targetApi="31">
+        <activity
+            android:name=".HardLevel"
+            android:exported="false" />
+        <activity
+            android:name=".MediumLevel"
+            android:exported="false" />
+        <activity
+            android:name=".EasyLevel"
+            android:exported="false" />
+        <activity
+            android:name=".SovaPage"
+            android:exported="false" />
+        <activity
+            android:name=".SkyePage"
+            android:exported="false" />
+        <activity
+            android:name=".SagePage"
+            android:exported="false" />
+        <activity
+            android:name=".OmenPage"
+            android:exported="false" />
+        <activity
+            android:name=".JettPage"
+            android:exported="false" />
+        <activity
+            android:name=".IsoPage"
+            android:exported="false" />
+        <activity
+            android:name=".GekkoPage"
+            android:exported="false" />
+        <activity
+            android:name=".ClovePage"
+            android:exported="false" />
+        <activity
+            android:name=".ChamPage"
+            android:exported="false" />
+        <activity
+            android:name=".CardCatalogPage"
+            android:exported="false" />
+        <activity
+            android:name=".MainActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+    </application>
+
+</manifest>

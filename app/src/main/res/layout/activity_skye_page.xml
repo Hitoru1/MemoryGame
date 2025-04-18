@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".SkyePage">
+
+    <ImageView
+        android:id="@+id/Skye"
+        android:layout_width="803dp"
+        android:layout_height="1290dp"
+        android:scaleType="centerCrop"
+        android:src="@drawable/skye"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <Button
+        android:id="@+id/HomeBtn"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:background="@drawable/x_button"
+        android:textAppearance="@style/TextAppearance.AppCompat.Large"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.941"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.035"
+        tools:ignore="MissingConstraints"  />
+    <!-- Horizontal ScrollView with ImageButtons -->
+    <HorizontalScrollView
+        android:id="@+id/horizontal_scroll"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:fillViewport="true"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="0dp"
+        android:layout_marginLeft="70dp"
+        android:layout_marginRight="70dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:orientation="horizontal">
+
+            <!-- Scrollable ImageButton (Add ImageButtons here) -->
+            <ImageButton
+                android:id="@+id/brimcatalog"
+                android:layout_width="136dp"
+                android:scaleType="fitCenter"
+                android:layout_height="132dp"
+                android:contentDescription="Button 1"
+                android:src="@drawable/brimstone_catalog"
+                android:layout_margin="20dp"/>
+
+            <ImageButton
+                android:id="@+id/chamcatalog"
+                android:layout_width="136dp"
+                android:layout_height="132dp"
+                android:scaleType="fitCenter"
+                android:contentDescription="Button 2"
+                android:src="@drawable/chamcatalog"
+                android:layout_margin="20dp"/>
+
+            <ImageButton
+                android:id="@+id/clovecatalog"
+                android:layout_width="136dp"
+                android:layout_height="132dp"
+                android:scaleType="fitCenter"
+                android:contentDescription="Button 3"
+                android:src="@drawable/clovecatalog"
+                android:layout_margin="20dp"/>
+
+            <ImageButton
+                android:id="@+id/gekkocatalog"
+                android:layout_width="136dp"
+                android:layout_height="132dp"
+                android:scaleType="fitCenter"
+                android:contentDescription="Button 4"
+                android:src="@drawable/gekkocatalog"
+                android:layout_margin="20dp"/>
+
+            <ImageButton
+                android:id="@+id/isocatalog"
+                android:layout_width="136dp"
+                android:layout_height="132dp"
+                android:scaleType="fitCenter"
+                android:contentDescription="Button 5"
+                android:src="@drawable/isocatalog"
+                android:layout_margin="20dp"/>
+
+            <ImageButton
+                android:id="@+id/jettcatalog"
+                android:layout_width="136dp"
+                android:layout_height="132dp"
+                android:scaleType="fitCenter"
+                android:contentDescription="Button 6"
+                android:src="@drawable/jettcatalog"
+                android:layout_margin="20dp"/>
+
+            <ImageButton
+                android:id="@+id/omencatalog"
+                android:layout_width="136dp"
+                android:layout_height="132dp"
+                android:scaleType="fitCenter"
+                android:contentDescription="Button 7"
+                android:src="@drawable/omencatalog"
+                android:layout_margin="20dp"/>
+
+            <ImageButton
+                android:id="@+id/sagecatalog"
+                android:layout_width="136dp"
+                android:layout_height="132dp"
+                android:scaleType="fitCenter"
+                android:contentDescription="Button 8"
+                android:src="@drawable/sagecatalog"
+                android:layout_margin="20dp"/>
+
+            <ImageButton
+                android:id="@+id/skyecatalog"
+                android:layout_width="136dp"
+                android:layout_height="132dp"
+                android:scaleType="fitCenter"
+                android:contentDescription="Button 9"
+                android:src="@drawable/skyecatalog"
+                android:layout_margin="20dp"/>
+
+            <ImageButton
+                android:id="@+id/sovacatalog"
+                android:layout_width="136dp"
+                android:layout_height="132dp"
+                android:scaleType="fitCenter"
+                android:contentDescription="Button 10"
+                android:src="@drawable/sovacatalog"
+                android:layout_margin="20dp"/>
+
+
+            <!-- Add other ImageButtons here if needed -->
+
+        </LinearLayout>
+    </HorizontalScrollView>
+</androidx.constraintlayout.widget.ConstraintLayout>
