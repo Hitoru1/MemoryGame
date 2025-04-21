@@ -1,7 +1,9 @@
 package com.example.memorygame;
 
+import android.os.CountDownTimer;
 import android.os.Handler;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
@@ -15,6 +17,10 @@ import androidx.appcompat.app.AppCompatActivity;
 import java.util.Arrays;
 import java.util.Collections;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 public class HardLevel extends AppCompatActivity {
 
     private ImageButton[] cards = new ImageButton[20];
@@ -24,14 +30,18 @@ public class HardLevel extends AppCompatActivity {
             R.drawable.img1, R.drawable.img2, R.drawable.img3,
             R.drawable.img4, R.drawable.img5, R.drawable.img6,
             R.drawable.img7, R.drawable.img8, R.drawable.img7,
-            R.drawable.img8, R.drawable.img10, R.drawable.img9,
-            R.drawable.img10, R.drawable.img9
+            R.drawable.img8, R.drawable.img9, R.drawable.img10,
+            R.drawable.img9, R.drawable.img10
     };
 
     private int firstCardIndex = -1;
     private boolean isBusy = false;
     private int flipCount = 0;
+    private int matchedPairs = 0;
     private TextView flipCounter;
+    private CountDownTimer countDownTimer;
+    private TextView timerTextView;
+    private long timeLeftInMillis = 110000; // 30 seconds
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,11 +49,10 @@ public class HardLevel extends AppCompatActivity {
         setContentView(R.layout.activity_hard_level);
 
         flipCounter = findViewById(R.id.flipCounter);
+        timerTextView = findViewById(R.id.timerTextView);
 
-        // Shuffle images
         Collections.shuffle(Arrays.asList(cardImages));
 
-        // Init cards
         for (int i = 0; i < cards.length; i++) {
             int resID = getResources().getIdentifier("card_" + i, "id", getPackageName());
             cards[i] = findViewById(resID);
@@ -52,15 +61,10 @@ public class HardLevel extends AppCompatActivity {
             cards[i].setOnClickListener(v -> onCardClick(index));
         }
 
-        // Get the player name and difficulty from the intent
         Intent intent = getIntent();
         String playerName = intent.getStringExtra("playerName");
-        String difficulty = intent.getStringExtra("difficulty");
 
-        // Display the player's name and selected difficulty on the screen
         TextView nameTextView = findViewById(R.id.playerNameTextView);
-        TextView difficultyTextView = findViewById(R.id.difficultyTextView);
-
         nameTextView.setText(" " + playerName);
 
         Button bckbutton = findViewById(R.id.backbtn);
@@ -69,62 +73,69 @@ public class HardLevel extends AppCompatActivity {
             startActivity(mainActivityIntent);
         });
 
-
         Button pauseButton = findViewById(R.id.pause);
         pauseButton.setOnClickListener(v -> {
-            // Inflate the pause popup layout
-            LayoutInflater inflater = LayoutInflater.from(HardLevel.this);
-            View popupView = inflater.inflate(R.layout.popup_pause_easy, null);
+            if (countDownTimer != null) {
+                countDownTimer.cancel();
+            }
 
-            // Create and show the pause dialog
+            LayoutInflater inflater = LayoutInflater.from(HardLevel.this);
+            View popupView = inflater.inflate(R.layout.popup_pause_hard, null);
+
             AlertDialog.Builder builder = new AlertDialog.Builder(HardLevel.this);
             builder.setView(popupView);
             AlertDialog dialog = builder.create();
             dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
             dialog.show();
 
-            // Handle close button click
             Button closeButton = popupView.findViewById(R.id.closepopup);
-            closeButton.setOnClickListener(view -> dialog.dismiss());
+            closeButton.setOnClickListener(view -> {
+                startCountdownTimer();
+                dialog.dismiss();
+            });
 
-            // Handle Home button click
             Button hmbtn = popupView.findViewById(R.id.Home);
             hmbtn.setOnClickListener(v1 -> {
                 Intent homeIntent = new Intent(HardLevel.this, MainActivity.class);
                 startActivity(homeIntent);
             });
 
-            // Handle Exit button click
+            Button restartButton = popupView.findViewById(R.id.restart);
+            restartButton.setOnClickListener(v1 -> {
+                resetGame();
+                dialog.dismiss();
+            });
+
             Button exitButton = popupView.findViewById(R.id.TotalExit);
             exitButton.setOnClickListener(v1 -> {
                 finishAffinity();
                 System.exit(0);
             });
-            Button restartButton = popupView.findViewById(R.id.restartButton);
-            restartButton.setOnClickListener(v1 -> {
-                // Reset the flip count
-                flipCount = 0;
-                flipCounter.setText("0");
-
-                // Reset all card images to card_back
-                for (int i = 0; i < cards.length; i++) {
-                    cards[i].setImageResource(R.drawable.card_back);
-                    cards[i].setTag(null);  // Clear any tag associated with the cards
-                }
-
-                // Shuffle the cards again (optional, based on your design)
-                Collections.shuffle(Arrays.asList(cardImages));
-
-                // Close the dialog after the reset
-                dialog.dismiss();
-            });
         });
+
+        startCountdownTimer();
+    }
+
+    private void startCountdownTimer() {
+        countDownTimer = new CountDownTimer(timeLeftInMillis, 1000) {
+            public void onTick(long millisUntilFinished) {
+                timeLeftInMillis = millisUntilFinished;
+                int secondsRemaining = (int) millisUntilFinished / 1000;
+                int minutes = secondsRemaining / 60;
+                int seconds = secondsRemaining % 60;
+                timerTextView.setText(String.format("%02d:%02d", minutes, seconds));
+            }
+
+            public void onFinish() {
+                showTimeoutDialog();
+            }
+        }.start();
     }
 
     private void onCardClick(int index) {
         if (isBusy || cards[index].getTag() != null) return;
 
-        cards[index].setImageResource(cardImages[index]);
+        flipCard(cards[index], cardImages[index], true); // flip to front image
         flipCount++;
         flipCounter.setText("" + flipCount);
 
@@ -133,18 +144,26 @@ public class HardLevel extends AppCompatActivity {
         } else {
             isBusy = true;
             if (cardImages[firstCardIndex].equals(cardImages[index])) {
-                // Match
                 cards[firstCardIndex].setTag("matched");
                 cards[index].setTag("matched");
-                resetTurn();
+                matchedPairs++;
+
+                new Handler().postDelayed(this::resetTurn, 400); // let the flip finish before continuing
+
+                if (matchedPairs == 10) {
+                    if (countDownTimer != null) {
+                        countDownTimer.cancel();
+                    }
+                    showWinDialog();
+                }
+
             } else {
-                // No match
-                Handler handler = new Handler();
-                handler.postDelayed(() -> {
-                    cards[firstCardIndex].setImageResource(R.drawable.card_back);
-                    cards[index].setImageResource(R.drawable.card_back);
+                int previousIndex = firstCardIndex;
+                new Handler().postDelayed(() -> {
+                    flipCard(cards[previousIndex], R.drawable.card_back, false); // flip back
+                    flipCard(cards[index], R.drawable.card_back, false);         // flip back
                     resetTurn();
-                }, 1000);
+                }, 800);
             }
         }
     }
@@ -152,5 +171,135 @@ public class HardLevel extends AppCompatActivity {
     private void resetTurn() {
         firstCardIndex = -1;
         isBusy = false;
+    }
+
+    private void flipCard(ImageButton card, int imageResId, boolean showFront) {
+        card.animate()
+                .rotationY(90)
+                .setDuration(100)  // Reduced from 150 to 100 for faster animation
+                .withEndAction(() -> {
+                    // Change the image halfway through the flip
+                    if (showFront) {
+                        card.setImageResource(imageResId);
+                    } else {
+                        card.setImageResource(R.drawable.card_back);
+                    }
+
+                    // Complete the flip
+                    card.setRotationY(-90);
+                    card.animate()
+                            .rotationY(0)
+                            .setDuration(100)  // Reduced from 150 to 100 for faster animation
+                            .start();
+                })
+                .start();
+    }
+
+    private void showTimeoutDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(HardLevel.this);
+        LayoutInflater inflater = getLayoutInflater();
+        View view = inflater.inflate(R.layout.timeout_popup_hard, null);
+
+        builder.setView(view);
+        AlertDialog timeoutDialog = builder.create();
+        timeoutDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        timeoutDialog.setCancelable(false);
+
+        TextView flipCountTextView = view.findViewById(R.id.flipCountTextView);
+        flipCountTextView.setText(" " + flipCount);
+
+        Button closeButton = view.findViewById(R.id.close_timeout);
+        closeButton.setOnClickListener(v -> timeoutDialog.dismiss());
+
+        Button restartButton = view.findViewById(R.id.restart_timeout_playagain);
+        restartButton.setOnClickListener(v -> {
+            timeoutDialog.dismiss();
+            resetGame();
+        });
+
+        Button exitButton = view.findViewById(R.id.exit_app_timeout);
+        exitButton.setOnClickListener(v -> {
+            timeoutDialog.dismiss();
+            finishAffinity();
+            System.exit(0);
+        });
+
+        timeoutDialog.show();
+    }
+
+    private void showWinDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(HardLevel.this);
+        LayoutInflater inflater = getLayoutInflater();
+        View view = inflater.inflate(R.layout.youwin_popup_hard, null);
+
+        builder.setView(view);
+        AlertDialog winDialog = builder.create();
+        winDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        winDialog.setCancelable(false);
+
+        TextView flipCountTextView = view.findViewById(R.id.flipCountTextView);
+        flipCountTextView.setText(" " + flipCount);
+
+        saveToLeaderboard(getIntent().getStringExtra("playerName"), flipCount, (int) (timeLeftInMillis / 1000));
+
+        Button closebutton = view.findViewById(R.id.close_timeout);
+        closebutton.setOnClickListener(v1 -> {
+            Intent closeIntent = new Intent(HardLevel.this, MainActivity.class);
+            startActivity(closeIntent);
+        });
+
+        Button restartButton = view.findViewById(R.id.restart_timeout_playagain);
+        restartButton.setOnClickListener(v -> {
+            winDialog.dismiss();
+            resetGame();
+        });
+
+        Button exitButton = view.findViewById(R.id.exit_app_timeout);
+        exitButton.setOnClickListener(v -> {
+            winDialog.dismiss();
+            finishAffinity();
+            System.exit(0);
+        });
+
+        winDialog.show();
+    }
+
+    private void saveToLeaderboard(String name, int flips, int timeLeft) {
+        SharedPreferences prefs = getSharedPreferences("Leaderboard_Hard", MODE_PRIVATE);
+        String leaderboardJson = prefs.getString("scores", "[]");
+
+        try {
+            JSONArray jsonArray = new JSONArray(leaderboardJson);
+            JSONObject newEntry = new JSONObject();
+            newEntry.put("name", name);
+            newEntry.put("flips", flips);
+            newEntry.put("timeLeft", timeLeft);
+
+            jsonArray.put(newEntry);
+            prefs.edit().putString("scores", jsonArray.toString()).apply();
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void resetGame() {
+        flipCount = 0;
+        matchedPairs = 0;
+        flipCounter.setText("0");
+
+        for (int i = 0; i < cards.length; i++) {
+            cards[i].setImageResource(R.drawable.card_back);
+            cards[i].setTag(null);
+        }
+
+        Collections.shuffle(Arrays.asList(cardImages));
+
+        if (countDownTimer != null) {
+            countDownTimer.cancel();
+        }
+
+        timeLeftInMillis = 110000;
+        startCountdownTimer();
     }
 }
